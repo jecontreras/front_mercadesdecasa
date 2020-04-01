@@ -7,7 +7,7 @@ import { RegistroComponent } from '../registro/registro.component';
 import { ServiciosService } from 'src/app/services/servicios.service';
 import { Store } from '@ngrx/store';
 import { CART } from 'src/app/interfaces/sotarage';
-import { CartAction, UserAction } from 'src/app/redux/app.actions';
+import { CartAction, UserAction, SeleccionCategoriaAction } from 'src/app/redux/app.actions';
 import { UsuariosService } from 'src/app/servicesComponents/usuarios.service';
 import * as _ from 'lodash';
 import { environment } from 'src/environments/environment';
@@ -15,6 +15,7 @@ import { ToolsService } from 'src/app/services/tools.service';
 import { VentasService } from 'src/app/servicesComponents/ventas.service';
 import { NotificacionesService } from 'src/app/servicesComponents/notificaciones.service';
 import { FormventasComponent } from 'src/app/dashboard-config/form/formventas/formventas.component';
+import { CategoriasService } from 'src/app/servicesComponents/categorias.service';
 
 const URLFRON = environment.urlFront;
 
@@ -48,6 +49,8 @@ export class HeaderComponent implements OnInit {
   notificando:number = 0;
   opcionoView:string = 'carro';
   listNotificaciones:any =[];
+  direccion:string = "";
+  listCategorias:any = [];
 
   constructor(
     public changeDetectorRef: ChangeDetectorRef,
@@ -58,6 +61,7 @@ export class HeaderComponent implements OnInit {
     private _tools: ToolsService,
     private _notificaciones: NotificacionesService,
     private _venta: VentasService,
+    private _categorias: CategoriasService
 
   ) { 
     this._store.subscribe((store: any) => {
@@ -89,6 +93,11 @@ export class HeaderComponent implements OnInit {
     else this.rolUser = 'visitante';
     this.listMenus();
     if(this.rolUser === 'administrador') this.getCarrito();
+    this.getCategorias();
+  }
+
+  getCategorias(){
+    this._categorias.get({ where:{ cat_activo: 0 }, limit: 1000}).subscribe((res:any)=> this.listCategorias = res.data );
   }
 
   getVentas(){
@@ -101,6 +110,11 @@ export class HeaderComponent implements OnInit {
       this.notificando = res.data.length;
       this.listNotificaciones = res.data;
     },(error)=>this._tools.presentToast("error de servidor"));
+  }
+  CategoriaEvento( item:any ){
+    console.log(item);
+    let accion = new SeleccionCategoriaAction( item, 'post');
+    this._store.dispatch( accion );
   }
 
   audioNotificando(obj:string){
@@ -151,15 +165,15 @@ export class HeaderComponent implements OnInit {
     let texto:string;
     this.data.total = 0;
     for(let row of this.listCart){
-      texto+= ` productos: ${ row.titulo } codigo: ${ row.codigo } foto: ${ row.foto } cantidad: ${ row.cantidad } color ${ row.color || 'default'}`;
+      texto+= ` productos: ${ row.titulo } codigo: ${ row.codigo } foto: ${ row.foto } cantidad: ${ row.cantidad }`;
       this.data.total+= row.costoTotal || 0;
     }
     console.log(this.dataUser, this.userId)
     if(this.dataUser.id){
-        this.urlwhat = `https://wa.me/${ this.dataUser.usu_indicativo || 57 }${ this.dataUser.usu_telefono || 3148487506 }?text=Hola Servicio al cliente, como esta, saludo cordial, estoy interesad@ en comprar los siguientes ${texto}`
+        this.urlwhat = `https://wa.me/${ this.dataUser.usu_indicativo || 57 }${ this.dataUser.usu_telefono || 3148487506 }?text=Hola Servicio al cliente, como esta, saludo cordial, mi direccion ${ this.direccion } estoy interesad@ en comprar los siguientes ${texto}`
     }else{
-      if(this.userId.id) this.urlwhat = `https://wa.me/${ this.userId.usu_indicativo || 57 }${ this.userId.usu_telefono || 3148487506 }?text=Hola Servicio al cliente, como esta, saludo cordial, estoy interesad@ en comprar los siguientes ${texto}`
-      else this.urlwhat = `https://wa.me/573148487506?text=Hola Servicio al cliente, como esta, saludo cordial, estoy interesad@ en comprar los siguientes ${texto}`
+      if(this.userId.id) this.urlwhat = `https://wa.me/${ this.userId.usu_indicativo || 57 }${ this.userId.usu_telefono || 3148487506 }?text=Hola Servicio al cliente, como esta, saludo cordial, mi direccion ${ this.direccion } estoy interesad@ en comprar los siguientes ${texto}`
+      else this.urlwhat = `https://wa.me/573148487506?text=Hola Servicio al cliente, como esta, saludo cordial, mi direccion ${ this.direccion } estoy interesad@ en comprar los siguientes ${texto}`
     }
   }
 

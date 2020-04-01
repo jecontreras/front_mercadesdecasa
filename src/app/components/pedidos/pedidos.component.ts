@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material';
 import { ViewProductosComponent } from '../view-productos/view-productos.component';
 import { CART } from 'src/app/interfaces/sotarage';
 import { Store } from '@ngrx/store';
-import { CartAction, UserCabezaAction } from 'src/app/redux/app.actions';
+import { CartAction, UserCabezaAction, SeleccionCategoriaAction } from 'src/app/redux/app.actions';
 import { ToolsService } from 'src/app/services/tools.service';
 import { ActivatedRoute } from '@angular/router';
 import { UsuariosService } from 'src/app/servicesComponents/usuarios.service';
@@ -46,7 +46,7 @@ export class PedidosComponent implements OnInit {
 
   notscrolly:boolean=true;
   notEmptyPost:boolean = true;
-
+  categoriaCargada:any = {};
 
   constructor(
     private _productos: ProductoService,
@@ -65,6 +65,12 @@ export class PedidosComponent implements OnInit {
       store = store.name;
       if(!store) return false;
       this.userId = store.usercabeza;
+      if(store.seleccionCategoria){
+        if(Object.keys(store.seleccionCategoria).length > 0 ){
+          if( this.categoriaCargada.id != store.seleccionCategoria.id ) this.ProcesoDeParams(store.seleccionCategoria);
+          this.categoriaCargada = store.seleccionCategoria;
+        }
+      }
     });
 
   }
@@ -82,7 +88,7 @@ export class PedidosComponent implements OnInit {
     this._store.dispatch(accion);
   }
   getCategorias(){
-    this._categorias.get( { where:{ cat_activo: 0 } } ).subscribe((res:any)=>{ 
+    this._categorias.get( { where:{ cat_activo: 0 }, limit: 1000 } ).subscribe((res:any)=>{ 
     for(let row of res.data){
       this.imageObject.push({
         image: row.cat_imagen || './assets/categoria.jpeg',
@@ -96,6 +102,7 @@ export class PedidosComponent implements OnInit {
       image: './assets/categoria.jpeg',
       thumbImage: './assets/categoria.jpeg',
       alt: '',
+      check: true,
       id: 0,
       title: "Todos"
     });
@@ -104,7 +111,7 @@ export class PedidosComponent implements OnInit {
   cargarProductos(){
     this.spinner.show();
     this._productos.get(this.query).subscribe((res:any)=>{
-        console.log("res", res);
+        //console.log("res", res);
         this.loader = false;
         this.spinner.hide();
         this.listProductos = _.unionBy(this.listProductos || [], res.data, 'id');
@@ -204,14 +211,34 @@ export class PedidosComponent implements OnInit {
     this._tools.presentToast("Agregado al Carro");
   }
   
-  imageOnClick(index) {
+  ProcesoDeParams(data:any){
+    let where:any ={ pro_activo: 0, pro_categoria: data.id };
+    this.procesoCategoria( where );
+  }
+
+  imageOnClick(index, obj:any) {
       //console.log('index', index, this.imageObject[index]);
-      this.query = { where:{ pro_activo: 0 }, page: 0, limit: 10 };
-      if( this.imageObject[index].id >0 ) this.query = { where:{ pro_activo: 0, pro_categoria: this.imageObject[index].id }, page: 0, limit: 10 };
-      this.listProductos = [];
-      this.notscrolly = true; 
-      this.notEmptyPost = true;
-      this.cargarProductos();
+      for(let row of this.imageObject) row.check = false;
+      obj.check = true;
+
+      let where:any = {};
+      if( this.imageObject[index].id == 0 ) {
+        let accion = new SeleccionCategoriaAction( {}, 'drop');
+        this._store.dispatch(accion);
+        this.procesoCategoria( false );
+        return false;
+      }
+      where ={ pro_activo: 0, pro_categoria: this.imageObject[index].id };
+      this.procesoCategoria( where );
+  }
+  
+  procesoCategoria( where:any ){
+    this.query = { where:{ pro_activo: 0 }, page: 0, limit: 10 };
+    if( where ) this.query = { where: where, page: 0, limit: 10 };
+    this.listProductos = [];
+    this.notscrolly = true; 
+    this.notEmptyPost = true;
+    this.cargarProductos();
   }
 
   arrowOnClick(event) {

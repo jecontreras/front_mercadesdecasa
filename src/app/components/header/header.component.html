@@ -6,13 +6,13 @@
     <button mat-icon-button (click)="snav.toggle()" translate="no">
       <i class="material-icons">menu</i>
     </button>
-    <h5 class="textInf"><span class="textInf">locomproaqui.com</span></h5>
+    <h5 class="textInf"><span class="textInf">mercardesdecasa.com</span></h5>
     <div class="row col">
       <div class="col"></div>
       <div style="margin-top: 7px;">
         <span [routerLink]="[ '/config/cobros' ]" *ngIf="dataUser.id" class="textInf pointer">$ {{ ( ( dataInfo?.porcobrado ) || 0 ).toLocaleString(1) }} COP</span>
-        <label><span *ngIf="rolUser === 'administrador'" (click)="this.opcionoView = 'notificaciones'; sidenav.toggle();" class="p-1 pointer" [matBadge]="notificando" > <i class="material-icons">notification_important</i> </span></label>
-        <span (click)="this.opcionoView = 'carro'; sidenav.toggle();" class="p-1 pointer" [matBadge]="listCart.length" > <i class="material-icons">shopping_cart</i> </span>
+        <label><span *ngIf="rolUser === 'administrador'" (click)="this.opcionoView = 'notificaciones'; sidenav.toggle();" class="p-1 pointer" matBadgeColor="accent" [matBadge]="notificando" > <i class="material-icons">notification_important</i> </span></label>
+        <span (click)="this.opcionoView = 'carro'; sidenav.toggle();" class="p-1 pointer" matBadgeColor="accent" [matBadge]="listCart.length" > <i class="material-icons">shopping_cart</i> </span>
 
         <span *ngIf="!dataUser.id" [routerLink]="[ '/login' ]" class="p-1 pointer" > <i class="material-icons">person_pin</i> </span>
         <span *ngIf="dataUser.id" [routerLink]="[ '/config/perfil' ]" class="p-1 pointer" > <i class="material-icons">person_pin</i> </span>
@@ -61,6 +61,11 @@
               <h2>Resumen</h2>
               <ul class="summary-table">
                 <li><span>total:</span> <span>${{ ( data.total || 0 ) | currency:'COP':true}}</span></li>
+              </ul>
+              <ul class="summary-table">
+                <li>
+                  <input type="text" [(ngModel)]="direccion" class="form-control form-control-sm" placeholder="Direccion o domicilio" (change)="submitChat()">
+                </li>
               </ul>
               <div class="d-flex justify-content-end">
                 <a class="list-group-item list-group-item-action active" target="_blank" [href]="urlwhat">Hacer Pedido</a> 
@@ -149,6 +154,20 @@
                 <span class="p textInf colorList">{{ item.nombre}}</span>
               </a>
             </li>
+
+            <li class="active col-12 paddingLeft pointer" *ngFor="let item of listCategorias">
+              <a routerLinkActive="active" translate="false" (click)="CategoriaEvento( item )" class="colorMenu">
+                <div class="row">
+                  <div class="col">
+                    <span class="p textInf colorList">{{ item.cat_nombre}}</span>
+                  </div>
+                  <div>
+                    <i class="material-icons colorList textInf">navigate_next</i>
+                  </div>
+                </div>
+              </a>
+            </li>
+
           </ul>
         </ng-container>
       </div>

@@ -2,6 +2,10 @@ html, body {
     height: 100%;
     margin: 0;
 }
+.mat-toolbar.mat-primary {
+  background: #00e676 !important;
+  color: rgb(250, 250, 250) !important;
+}
 .pointer {
   cursor: pointer;
 }

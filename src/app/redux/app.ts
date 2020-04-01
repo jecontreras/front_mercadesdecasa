@@ -120,6 +120,29 @@ export function appReducer(state: STORAGES = APP, action: _action.actions) {
         break;
       }
     }
+    case _action.SELECCIONCATEGORIA: {
+      switch(action.opt) {
+        case 'post' :
+          if(!state.seleccionCategoria) state.seleccionCategoria = {};
+            state.seleccionCategoria = action.payload;
+            return local_Storage(state);
+        break;
+        case 'put': {
+          state.seleccionCategoria = action.payload;
+        }
+        return local_Storage(state);
+        break;
+        case 'delete': 
+          state.seleccionCategoria = {};
+          return local_Storage(state);
+        break;
+        case 'drop': {
+          state.seleccionCategoria = {};
+          return local_Storage(state);
+        }
+        break;
+      }
+    }
     
     /*case _action.ARTICULOS:{
       switch (action.opt){
